@@ -1,0 +1,32 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  justify-items: center;
+  flex-direction: column;
+  height: 95vh;
+  background-color: black;
+  text-align: center;
+  .main-container {
+    display: flex;
+    flex-direction: column;
+    background-color: darkkhaki;
+    padding: 3rem;
+    border-radius: 10px;
+    font-size: large;
+  }
+  label {
+    margin: 1rem;
+    display: flex;
+    justify-content: space-between;
+  }
+  button {
+    margin: 1rem;
+    font-size: large;
+  }
+  #status {
+    white-space: pre-line;
+    color: red;
+  }
+}

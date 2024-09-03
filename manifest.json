@@ -1,0 +1,31 @@
+{
+    "manifest_version": 3,
+    "name": "Umadb data saver",
+    "description": "will save seen trainer information and check in next load if the information was seen or nah",
+    "version": "0.01",
+    "action": {
+      "default_icon": "images/horseshoe_64.png"
+    },
+    "icons": {
+      "16": "images/horseshoe_16.png",
+      "24": "images/horseshoe_24.png",
+      "32": "images/horseshoe_32.png",
+      "64": "images/horseshoe_64.png"
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "permissions": ["activeTab", "scripting","storage"],
+    "commands": {
+      "_execute_action": {
+        "suggested_key": {
+          "default": "Ctrl+B"
+        }
+      }
+    },
+    
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  }
+}

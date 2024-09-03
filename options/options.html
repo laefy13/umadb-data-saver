@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="options.css" />
+    <title>Options</title>
+  </head>
+  <body>
+    <div class="main-container">
+      <label>
+        Save IDs only
+        <input type="checkbox" id="is_id_only" />
+      </label>
+
+      <label>
+        One page
+        <input type="checkbox" id="is_one_page" />
+      </label>
+      <label> Color<input type="color" value="#ff0000" id="color" /> </label>
+
+      <div id="status"></div>
+      <button id="save">Save</button>
+      <button id="clear-all">Clear localStorage</button>
+      <button id="clear-factors">Clear data with factors</button>
+      <button id="clear-ids">Clear data without factors</button>
+
+      <div class="attribution">
+        <a
+          href="https://www.flaticon.com/free-icons/horseshoe"
+          title="horseshoe icons"
+          >Horseshoe icons created by<br />
+          Those Icons - Flaticon</a
+        >
+      </div>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+.del-id-button {
+  background-color: inherit !important;
+  border: 0;
+}
+[class^="key-"] {
+  margin-left: 1rem;
+}
