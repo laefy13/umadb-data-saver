@@ -6,6 +6,15 @@ Thsi is an extension meant to be used for umadb, where the user can save the see
  - Even when you use this, it will use localStorage for saving the info.
  - There is keybind for the extension (Ctrl+B) which is only removeable by manually removing/editing the "commands" in manifest.json
 
+## Functions
+#### Automatically save data
+The data in the current page will be automatically saved upon clicking the extension/using the keybind
+#### Removeable data
+The data can be deleted by:
+- clicking the one in the header, which will delete the information for that ID from the saved.
+- clicking the one next to the search button, which will delete all of the informaton of the current page from the saved.
+#### Two different storages
+There is an option for this extension that is called "Save IDs only" where the user can decide to save the IDs only or with factors, and these two are saved differently. Go below for more.
 
 ## Installation
 

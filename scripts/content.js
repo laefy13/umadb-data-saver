@@ -165,7 +165,7 @@
       }
     }
 
-    if (!document.querySelector("del-all-btn")) {
+    if (!document.querySelector(".del-all-btn")) {
       // first btn-group
       const btn_grp = document.querySelector(".btn-group");
       const del_all_btn = generateDeleteButton();
