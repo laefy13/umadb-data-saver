@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Umadb data saver",
     "description": "will save seen trainer information and check in next load if the information was seen or nah",
-    "version": "0.01",
+    "version": "0.02",
     "action": {
       "default_icon": "images/horseshoe_64.png"
     },

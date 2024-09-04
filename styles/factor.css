@@ -2,6 +2,10 @@
   background-color: inherit !important;
   border: 0;
 }
-[class^="key-"] {
+
+.del-status,
+.del-all {
   margin-left: 1rem;
+  color: white;
+  align-self: center;
 }

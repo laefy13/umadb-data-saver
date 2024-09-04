@@ -39,13 +39,19 @@ const updateOptions = () => {
 };
 
 const trySendMessage = (message) => {
-  chrome.runtime.sendMessage({ action: message }, (response) => {
-    if (chrome.runtime.lastError) {
-      updateStatus(
-        "Error! make sure that the \nextension has access to umapure "
-      );
-    } else if (response && response.status) updateStatus(response.status);
-  });
+  try {
+    chrome.runtime.sendMessage({ action: message }, (response) => {
+      if (chrome.runtime.lastError) {
+        updateStatus(
+          "Error! make sure that the \nextension has access to umapure "
+        );
+      } else if (response && response.status) updateStatus(response.status);
+    });
+  } catch (e) {
+    updateStatus(
+      "Error! make sure that the \nextension has access to umapure "
+    );
+  }
 };
 
 document.addEventListener("DOMContentLoaded", updateOptions);

@@ -10,15 +10,41 @@
     });
   };
 
-  const deleteKey = (key) => {
+  const changeButton = (text) => {
+    chrome.runtime.sendMessage({ action: "updateBadgeText", text: text });
+  };
+
+  const saveData = (storage_item_key, data) => {
+    localStorage.setItem(storage_item_key, JSON.stringify(data));
+  };
+
+  const dataInit = () => {
     const is_id_only =
       document.getElementsByTagName("body")[0].getAttribute("is-id-only") ===
       "true";
     const storage_item_key = is_id_only ? "trainer_ids" : "factors";
 
     let raw_data = localStorage.getItem(storage_item_key);
-    data = raw_data ? JSON.parse(raw_data) : is_id_only ? [] : {};
-    // console.log("delete data", data);
+    return [
+      storage_item_key,
+      raw_data ? JSON.parse(raw_data) : is_id_only ? [] : {},
+    ];
+  };
+
+  const deleteMultKeys = (keys) => {
+    let [storage_item_key, data] = dataInit();
+    if (storage_item_key === "factors") keys.forEach((key) => delete data[key]);
+    else data = data.filter((item) => !keys.includes(item));
+    saveData(storage_item_key, data);
+
+    const delete_status = document.querySelector(`.del-all`);
+    if (delete_status) {
+      delete_status.innerHTML = "Deleted!";
+    }
+  };
+
+  const deleteKey = (key) => {
+    const [storage_item_key, data] = dataInit();
     if (storage_item_key === "factors") delete data[key];
     else {
       const index = data.indexOf(key);
@@ -26,21 +52,21 @@
         data.splice(index, 1);
       }
     }
-    localStorage.setItem(storage_item_key, JSON.stringify(data));
+    saveData(storage_item_key, data);
+
     const delete_status = document.querySelector(`.key-${key}`);
-    // console.log(`key-${key}`);
     if (delete_status) {
       delete_status.innerHTML = "Deleted!";
-    } else {
-      console.log("delete status not found");
     }
-    console.log("deleted", key);
   };
 
   const generateDeleteButton = () => {
-    var del_button = document.createElement("button");
-    var del_svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    var del_path = document.createElementNS(
+    const del_button = document.createElement("button");
+    const del_svg = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    const del_path = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "path"
     );
@@ -66,7 +92,20 @@
     return del_button;
   };
 
-  const findElementText = () => {
+  const deleteCurrentPageIds = () => {
+    const del_buttons = document.querySelectorAll("button[data-id]");
+
+    if (!del_buttons) return;
+    const keys = [];
+    for (let i = 0; i < del_buttons.length; i++) {
+      const id = del_buttons[i].getAttribute("data-id");
+      keys.push(id);
+    }
+
+    deleteMultKeys(keys);
+  };
+
+  const main = () => {
     const body_el = document.getElementsByTagName("body")[0];
     const is_id_only = body_el.getAttribute("is-id-only") === "true";
     const is_one_page = body_el.getAttribute("is-one-page") === "true";
@@ -119,20 +158,38 @@
       for (let i = 0; i < success_btns.length; i++) {
         const success_btn = success_btns[i];
         if (!success_btn) break;
-        // console.log("buh! ", success_btn.textContent.trim());
         if (success_btn.textContent.trim() !== "検索") continue;
-        success_btn.addEventListener("click", () =>
-          chrome.runtime.sendMessage({ action: "updateBadgeText", text: "OFF" })
-        );
-        // console.log("hooked 検索");
+        success_btn.addEventListener("click", () => changeButton("OFF"));
         body_el.setAttribute("is-hooked", "true");
         break;
       }
     }
 
-    if (rows[0].textContent.trim() === "なし") {
+    if (!document.querySelector("del-all-btn")) {
+      // first btn-group
+      const btn_grp = document.querySelector(".btn-group");
+      const del_all_btn = generateDeleteButton();
+      del_all_btn.setAttribute("class", "del-all-btn");
+      del_all_btn.addEventListener("click", deleteCurrentPageIds);
+      btn_grp.appendChild(del_all_btn);
+
+      const del_all_status = document.createElement("span");
+      del_all_status.innerText = "Not Deleted";
+      del_all_status.setAttribute("class", `del-all`);
+      btn_grp.appendChild(del_all_status);
+    } else {
+      const delete_all_status = document.querySelector(`.del-all`);
+      if (delete_all_status) {
+        delete_all_status.innerHTML = "Not Deleted";
+      }
+    }
+
+    if (
+      rows[0].textContent.trim() === "なし" ||
+      rows[0].textContent.trim().includes("Loading...")
+    ) {
       window.alert("no content cuz");
-      chrome.runtime.sendMessage({ action: "updateBadgeText", text: "OFF" });
+      changeButton("OFF");
       return;
     }
     const rows_len = rows.length;
@@ -148,7 +205,6 @@
       : data
       ? JSON.parse(data)
       : {};
-    // console.log("data:", data);
 
     for (let i = 0; i < rows_len; i++) {
       const row = rows[i];
@@ -158,8 +214,6 @@
       const id = id_el.textContent.trim();
       if (!id) continue;
       let exists = is_id_only ? data.includes(id) : id in data;
-
-      // console.log("id exists");
 
       let factor_array = [];
       if (!is_id_only) {
@@ -183,10 +237,8 @@
 
       if (!header_el) continue;
       if (exists) {
-        console.log("trainer data found");
         header_el.classList.add(css_name);
       } else {
-        console.log("trainer data not found and added to data");
         if (is_id_only) {
           data.push(id);
         } else {
@@ -195,8 +247,8 @@
         is_changed = true;
         header_el.classList.remove(css_name);
       }
-      var del_id_button = row.querySelector(".header .del-id-button");
-      var del_status = row.querySelector(".header .del-status");
+      let del_id_button = row.querySelector(".header .del-id-button");
+      let del_status = row.querySelector(".header .del-status");
 
       const handleDelete = (event) => {
         const button = event.currentTarget;
@@ -217,8 +269,8 @@
       del_status.setAttribute("class", `del-status key-${id}`);
       del_id_button.setAttribute("data-id", id);
     }
-    if (is_changed)
-      localStorage.setItem(storage_item_key, JSON.stringify(data));
+    if (is_changed) saveData(storage_item_key, data);
+    changeButton("ON");
     pageLinkAddListeners(is_one_page);
   };
   const removeClasses = () => {
@@ -227,16 +279,17 @@
     const rows = document
       .getElementsByTagName("tbody")[0]
       .getElementsByTagName("tr");
-    // const class_elements = document.querySelectorAll(".factors-added-class");
-    // const class_elements_len = class_elements.length;
+
     if (!rows) return;
     const rows_len = rows.length;
 
     for (let i = 0; i < rows_len; i++) {
-      console.log(`i:${i}`);
       const header_el = rows[i].querySelector(".header");
       header_el.classList.remove(css_name);
-      header_el.removeChild(header_el.querySelector(".del-id-button"));
+      header_el.querySelector(".del-id-button")?.remove();
+      header_el.querySelector(".del-status")?.remove();
+      document.querySelector(".del-all")?.remove();
+      document.querySelector(".del-all-btn")?.remove();
     }
   };
 
@@ -246,18 +299,16 @@
       const page_link = page_links[i];
       if (!page_link) break;
       if (is_one_page) {
-        console.log("remove classes listener added");
         page_link.removeEventListener("click", removeClasses);
         page_link.addEventListener("click", removeClasses);
-        chrome.runtime.sendMessage({ action: "updateBadgeText", text: "OFF" });
+        changeButton("OFF");
       } else {
-        console.log("findelement text listener added");
-        page_link.removeEventListener("click", findElementText);
-        page_link.addEventListener("click", findElementText);
+        page_link.removeEventListener("click", main);
+        page_link.addEventListener("click", main);
       }
     }
-    console.log("added link listeners");
   };
+
   const rgbToHex = (rgb) => {
     const rgbValues = rgb.replace(/^rgb\(|\s+|\)$/g, "").split(",");
     const r = parseInt(rgbValues[0], 10);
@@ -294,10 +345,10 @@
         style.innerHTML = `.factors-added-class { background-color: ${items.color} !important; }`;
         document.head.appendChild(style);
       }
-      var body_el = document.getElementsByTagName("body")[0];
+      const body_el = document.getElementsByTagName("body")[0];
       body_el.setAttribute("is-id-only", items.is_id_only);
       body_el.setAttribute("is-one-page", items.is_one_page);
-      findElementText();
+      main();
     });
   };
 

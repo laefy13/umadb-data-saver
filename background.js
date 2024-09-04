@@ -18,15 +18,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.action.onClicked.addListener(async (tab) => {
   if (tab.url.startsWith(umapure)) {
     const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
-    const nextState = prevState === "ON" ? "OFF" : "ON";
 
-    await chrome.action.setBadgeText({
-      tabId: tab.id,
-      text: nextState,
-    });
-    console.log("Clicked");
-
-    if (nextState === "ON") {
+    if (prevState === "OFF") {
       chrome.scripting.executeScript({
         target: { tabId: tab.id },
         files: ["scripts/content.js"],
@@ -35,29 +28,41 @@ chrome.action.onClicked.addListener(async (tab) => {
         target: { tabId: tab.id },
         files: ["styles/factor.css"],
       });
-    }
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch (message.action) {
-        case "clearAll":
-        case "clearFactors":
-        case "clearIds":
-          chrome.tabs.sendMessage(
-            tab.id,
-            { action: message.action },
-            (response) => {
-              if (response && response.status) {
-                sendResponse(response);
-              }
+      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        switch (message.action) {
+          case "clearAll":
+          case "clearFactors":
+          case "clearIds":
+            try {
+              chrome.tabs.sendMessage(
+                tab.id,
+                { action: message.action },
+                (response) => {
+                  if (chrome.runtime.lastError) {
+                    sendResponse({
+                      status:
+                        "Error! make sure that the \nextension has access to umapure ",
+                    });
+                  } else if (response && response.status) {
+                    sendResponse(response);
+                  }
+                }
+              );
+            } catch (e) {
+              sendResponse({
+                status:
+                  "Error! make sure that the \nextension has access to umapure ",
+              });
             }
-          );
 
-          break;
-        default:
-          console.log("Unknown action:", message.action);
-          break;
-      }
-      return true;
-    });
+            break;
+          default:
+            console.log("Unknown action:", message.action);
+            break;
+        }
+        return true;
+      });
+    }
   }
 });
